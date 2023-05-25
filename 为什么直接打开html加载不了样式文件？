@@ -1,0 +1,21 @@
+我们在打包生成的文件夹中，直接打开index.html文件，控制台总是提示找不到相应的css文件，这是为什么呢？
+也许有人要说：因为需要运行在web服务上
+对，但为什么一定要运行在web服务上呢？
+最近因为工作内容，需要深入研究组件库相关知识，恰好对这个问题有了一些了解
+
+
+我们经常看到说，style-loader在 DOM 里插入一个 <style> 标签，并且将css-loader处理后的css内容写入这个标签内，这个过程其实是一个runtime过程
+浏览器运行您的项目，在开发者工具的sources中，可以看到webpack文件下的runtime文件夹下有一个cssloading文件，其中有获取css文件并创建style标签的过程。
+这是不是就是style-loader的源码呢？我后续会去验证一下。
+
+这里，还有一个需要注意的问题，如果你用打包生成的css文件名直接去js文件或者index.html中搜索，是搜索不到的。为什么呢？
+也是和style-loader是一个runtime过程有关，打包生成的css文件和js文件的文件名通常是[chunkId].[hash].chunk.css和[chunkId].[hash].chunk.js
+这二者的chunkId是对应的，当然，可能部分js就是没有对应的css。当index.html加载chunId1时，就运行相应的js生成ui，并找到相应的css文件并创建style标签append到页面中。
+所以，根本不会在html或者js中直接引用模块化的css文件，当然在index.html和js中就搜索不到对应文件名。
+当然，打包前的index.html可能会直接引入一些基础样式文件，这些还是能直接搜索到的。
+
+
+这些其实是在研究组件库样式方案的过程发现的，可能你还记得早期的antd需要单独引入样式文件，这是因为当时antd采用的是逻辑和样式分离的方案，
+而目前antd采用的是样式与逻辑结合的方式，具体方案是CSS in JS中的emotion
+
+
